@@ -1,0 +1,129 @@
+
+import java.util.LinkedList;
+import java.util.Queue;
+
+class Process {
+    int id;             // Process ID
+    int burstTime;      // Total burst time of the process
+    int remainingTime;  // Remaining burst time for preemption
+    int waitingTime;    // Waiting time
+    int turnAroundTime; // Turnaround time
+
+    public Process(int id, int burstTime) {
+        this.id = id;
+        this.burstTime = burstTime;
+        this.remainingTime = burstTime;
+    }
+}
+
+public class RoundrobinPreemptive {
+    public static void roundRobinScheduling(Process[] processes, int timeQuantum) {
+        int currentTime = 0;
+        Queue<Process> queue = new LinkedList<>();
+
+        // Initialize the queue with all processes
+        for (Process process : processes) {
+            queue.add(process);
+        }
+
+        // Execute processes in round-robin manner
+        while (!queue.isEmpty()) {
+            Process process = queue.poll(); // Get the next process in the queue
+
+            // If the remaining burst time is greater than the time quantum, process it partially
+            if (process.remainingTime > timeQuantum) {
+                currentTime += timeQuantum; // Increment time by the time quantum
+                process.remainingTime -= timeQuantum; // Reduce remaining time
+
+                queue.add(process); // Add the process back to the queue
+            } else {
+                // Process can finish within the current time quantum
+                currentTime += process.remainingTime; // Complete the process
+                process.remainingTime = 0;
+
+                process.turnAroundTime = currentTime; // Set turnaround time
+                process.waitingTime = currentTime - process.burstTime; // Set waiting time
+            }
+        }
+
+        // Print the results for each process
+        System.out.println("Process ID | Burst Time | Waiting Time | Turnaround Time");
+        for (Process process : processes) {
+            System.out.println("    " + process.id + "      |    " + process.burstTime + "    |     "
+                    + process.waitingTime + "       |     " + process.turnAroundTime);
+        }
+    }
+    // note that arrival time of all the processes is same respectively;
+
+    public static void main(String[] args) {
+        Process[] processes = {
+                new Process(1, 4),
+                new Process(2, 3),
+                new Process(3, 5),
+                new Process(4, 2)
+        };
+        int timeQuantum = 2;
+
+        roundRobinScheduling(processes, timeQuantum);
+    }
+}
+//practical theory:
+//5.Write a program to implement CPU Scheduling Algorithms:
+//1. FCFS
+//2. SJF
+//The ready queue is a data structure maintained by the operating system that holds all processes that are ready and waiting to use the CPU.
+//Waiting Time in CPU scheduling is the total amount of time a process spends waiting in the ready queue before it actually starts executing on the CPU.
+//
+//In terms of the above terms, we can define waiting time as:
+//LP practical:
+//Waiting Time
+//=
+//Starting Time
+//−
+//Arrival Time
+//Waiting Time=Starting Time−Arrival Time
+//
+//Arrival Time is when the process first enters the system and is placed in the ready queue.
+//Starting Time is when the process finally gets CPU time and begins execution.
+//CPU scheduling is a process used by operating systems to determine which task (or process) will use the CPU next.
+//The scheduler’s job is to manage these tasks and decide the order in which each task gets the CPU.
+//Process: A program in execution. Each process has its own set of instructions and data it needs to execute.
+//
+//Burst Time: The time required by a process to complete its execution on the CPU. It is also called the execution time.
+//
+//Arrival Time: The time at which a process arrives and is ready for execution.
+//
+//Waiting Time: The total time a process spends waiting in the ready queue before getting CPU time.
+//
+//Turnaround Time: The total time taken from the arrival of a process to its completion. It includes both the waiting time and the burst time.
+//difference between non preemptive and  preemptive;
+//CPU Control	                Process holds the CPU until it completes.	        CPU can be taken from a process and reassigned.
+//Response to New Processes 	Does not respond immediately to new processes.	Can respond   immediately if a higher-priority process arrives.      
+//fcfs :first come first serve(preemptive);
+//sjf:shortest job first(preemptive and non premptive);
+//piority: there is priority section which is used for prioritizing processes;
+//round robin: there is time slice allocated to each process if it is completed within that time span then it is ok but if it is not it is push back to circular queue in which processes are executiing it is done untill completion of every process;
+//
+//Page: A fixed-size block of virtual memory. Programs are divided into pages to manage memory efficiently. Each page holds a part of the program or data.
+//
+//Frame: A fixed-size block of physical memory (RAM) where pages are loaded. The size of each frame usually matches the size of a page to simplify memory management.
+//
+//Page Fault: A page fault occurs when a program tries to access a page that is not currently loaded in memory. When this happens, the operating system has to load the page from secondary storage (like a hard disk) into a free frame in RAM.
+//
+//Page Replacement: If memory is full when a page fault occurs, the operating system must replace an existing page in memory to make room for the new page. This process of selecting and replacing a page is known as page replacement.
+//
+//Page Replacement Algorithm: These are strategies used by the operating system to decide which page to replace in memory when a page fault occurs, aiming to minimize future page faults. Common algorithms include:
+//
+//FIFO (First-In, First-Out): Replaces the page that has been in memory the longest.
+//LRU (Least Recently Used): Replaces the page that has not been used for the longest period.
+//Optimal (OPT): Replaces the page that will not be used for the longest time in the future (ideal but requires future knowledge).
+//Clock Algorithm: A circular version of FIFO that uses a "reference bit" to decide which page to replace.
+//Page Table: A data structure maintained by the operating system that maps virtual pages to physical frames. It keeps track of the location of each page for each process.
+//
+//Page Hit: Occurs when a requested page is already in memory, meaning no page fault or replacement is needed.
+//
+//Page Miss: Also called a page fault, a page miss occurs when the requested page is not in memory, requiring the OS to load it into a frame, possibly causing a page replacement if memory is full.
+//
+//Number Of Hits: There are 2 hits, meaning 2 page requests found the page already in memory.
+//Number of Page Faults: There are 7 page faults, where pages were not in memory and had to be loaded. 
+//The FIFO page replacement algorithm removes the oldest page from memory when a new page needs to be loaded, and all frames (memory slots) are occupied. It doesn’t consider whether a page was recently used, making it simple but not always the most efficient.

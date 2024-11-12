@@ -1,0 +1,152 @@
+import java.util.*;
+
+class SymTabEntry {
+    String symbol;
+    int address;
+    boolean isDefined;
+
+    public SymTabEntry(String symbol, int address, boolean isDefined) {
+        this.symbol = symbol;
+        this.address = address;
+        this.isDefined = isDefined;
+    }
+}
+
+class LitTabEntry {
+    String literal;
+    int address;
+    boolean isAssigned;
+
+    public LitTabEntry(String literal, int address, boolean isAssigned) {
+        this.literal = literal;
+        this.address = address;
+        this.isAssigned = isAssigned;
+    }
+}
+
+public class Pass2OfTwoPassAssembler {
+    private Map<Integer, SymTabEntry> symTab = new HashMap<>();
+    private Map<Integer, LitTabEntry> litTab = new HashMap<>();
+    private List<String> targetCode = new ArrayList<>();
+    private int locCounter = 0;
+
+    // Method to simulate loading symbol table data
+    public void loadSymTab() {
+        // Simulating symbol table data (for demonstration)
+        symTab.put(1, new SymTabEntry("START", 100, true));   // Address 100 for symbol "START"
+        symTab.put(2, new SymTabEntry("LOOP", 200, true));    // Address 200 for symbol "LOOP"
+        symTab.put(3, new SymTabEntry("END", 300, false));    // Address 300 for symbol "END"
+    }
+
+    // Method to simulate loading literal table data
+    public void loadLitTab() {
+        // Simulating literal table data (for demonstration)
+        litTab.put(1, new LitTabEntry("LIT1", 400, true));     // Address 400 for literal "LIT1"
+        litTab.put(2, new LitTabEntry("LIT2", 500, false));    // Address 500 for literal "LIT2"
+    }
+
+    // Method to simulate processing intermediate code
+    public void generateTargetCode() {
+        // Example intermediate lines (simulated)
+        String[] lines = {
+            "(IS,01) (S,1) (L,1)",
+            "(IS,02) (S,2) (L,2)",
+            "(AD,01) (S,3)"
+        };
+
+        for (String line : lines) {
+            processIntermediateLine(line.trim());
+        }
+
+        // Print the target code to console
+        printTargetCode();
+    }
+
+    private void processIntermediateLine(String line) {
+        if (line.isEmpty()) return;
+
+        // Parse the intermediate code
+        String[] parts = line.split("\\s+");
+
+        // Check if it's an instruction
+        if (parts[0].startsWith("(IS,")) {
+            processInstruction(parts);
+        }
+        // Handle assembly directive
+        else if (parts[0].startsWith("(AD,")) {
+            processDirective(parts);
+        }
+    }
+    private void processInstruction(String[] parts) {
+        StringBuilder machineCode = new StringBuilder("+ ");
+
+        // Get operation code
+        String opcode = parts[0].substring(4, parts[0].length() - 1);
+        machineCode.append(String.format("%02d", Integer.parseInt(opcode))).append(" ");
+
+        // Process register if present
+        if (parts.length > 1 && parts[1].startsWith("(") && parts[1].endsWith(")")) {
+            String register = parts[1].substring(1, parts[1].length() - 1);
+            machineCode.append(register).append(" ");
+        }
+
+        // Process operand (symbol or literal)
+        if (parts.length > 2) {
+            String operand = parts[2];
+            if (operand.startsWith("(S,")) {
+                // Symbol reference
+                int symIndex = Integer.parseInt(operand.substring(3, operand.length() - 1));
+                SymTabEntry sym = symTab.get(symIndex);
+                if (sym != null) {
+                    // Replace (S,X) with the symbol's address
+                    machineCode.append(String.format("%03d", sym.address));
+                } else {
+                    machineCode.append("???"); // Symbol not found
+                }
+            } else if (operand.startsWith("(L,")) {
+                // Literal reference
+                int litIndex = Integer.parseInt(operand.substring(3, operand.length() - 1));
+                LitTabEntry lit = litTab.get(litIndex);
+                if (lit != null) {
+                    // Replace (L,X) with the literal's address
+                    machineCode.append(String.format("%03d", lit.address));
+                } else {
+                    machineCode.append("???"); // Literal not found
+                }
+            }
+        }
+
+        // Add the processed line to the target code
+        targetCode.add(machineCode.toString());
+    }
+
+
+    private void processDirective(String[] parts) {
+        String directiveCode = parts[0].substring(4, parts[0].length() - 1);
+
+        // Handle START directive
+        if (directiveCode.equals("01") && parts.length > 1) {
+            String startAddr = parts[1].substring(3, parts[1].length() - 1);
+            locCounter = Integer.parseInt(startAddr);
+        }
+    }
+
+    private void printTargetCode() {
+        for (String code : targetCode) {
+            System.out.println(code);
+        }
+    }
+
+    public static void main(String[] args) {
+        Pass2OfTwoPassAssembler pass2 = new Pass2OfTwoPassAssembler();
+
+        // Simulate loading of symbol and literal tables
+        pass2.loadSymTab();
+        pass2.loadLitTab();
+
+        // Generate and display target code
+        pass2.generateTargetCode();
+
+        System.out.println("Pass 2 completed successfully! Target code displayed above.");
+    }
+}

@@ -1,0 +1,79 @@
+
+import java.util.*;
+
+class priorityPreemptive {
+    static class Process {
+        int id;
+        int arrivalTime;
+        int burstTime;
+        int priority;
+        int remainingTime;   // Remaining burst time for preemption
+        int completionTime;
+        int waitingTime;
+        int turnAroundTime;
+        boolean isCompleted;
+
+        public Process(int id, int arrivalTime, int burstTime, int priority) {
+            this.id = id;
+            this.arrivalTime = arrivalTime;
+            this.burstTime = burstTime;
+            this.remainingTime = burstTime; // Initialize remaining time with burst time
+            this.priority = priority;
+            this.isCompleted = false;
+        }
+    }
+
+    public static void main(String[] args) {
+        List<Process> processes = new ArrayList<>();
+        processes.add(new Process(1, 0, 5, 2));
+        processes.add(new Process(2, 1, 3, 1));
+        processes.add(new Process(3, 2, 8, 3));
+        processes.add(new Process(4, 3, 6, 0));
+
+        preemptivePriorityScheduling(processes);
+    }
+
+    public static void preemptivePriorityScheduling(List<Process> processes) {
+        int currentTime = 0;
+        int completedProcesses = 0;
+        Process currentProcess = null;
+
+        while (completedProcesses < processes.size()) {
+            Process highestPriorityProcess = null;
+
+            // Find the highest priority process that has arrived and is not completed
+            for (Process p : processes) {
+                if (p.arrivalTime <= currentTime && !p.isCompleted &&
+                    (highestPriorityProcess == null || p.priority < highestPriorityProcess.priority)) {
+                    highestPriorityProcess = p;
+                }
+            }
+
+            // If there is a process to execute
+            if (highestPriorityProcess != null) {
+                if (currentProcess != highestPriorityProcess) {
+                    currentProcess = highestPriorityProcess; // Switch to the new process
+                }
+                currentProcess.remainingTime--;
+
+                // Check if process completed its execution
+                if (currentProcess.remainingTime == 0) {
+                    currentProcess.completionTime = currentTime + 1;
+                    currentProcess.turnAroundTime = currentProcess.completionTime - currentProcess.arrivalTime;
+                    currentProcess.waitingTime = currentProcess.turnAroundTime - currentProcess.burstTime;
+                    currentProcess.isCompleted = true;
+                    completedProcesses++;
+                }
+            }
+            currentTime++;
+        }
+
+        // Display results
+        System.out.println("ID  Arrival  Burst  Priority  Completion  Waiting  Turnaround");
+        for (Process p : processes) {
+            System.out.printf("%d    %d       %d      %d        %d         %d       %d\n",
+                    p.id, p.arrivalTime, p.burstTime, p.priority, p.completionTime, p.waitingTime, p.turnAroundTime);
+        }
+    }
+}
+

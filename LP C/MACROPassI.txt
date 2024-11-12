@@ -1,0 +1,131 @@
+
+import java.util.*;
+
+//Class to store the macro name and the corresponding index in the MDT
+class MNTEntry {
+ String macroName;
+ int mdtIndex;
+
+ public MNTEntry(String macroName, int mdtIndex) {
+     this.macroName = macroName;
+     this.mdtIndex = mdtIndex;
+ }
+}
+
+//Class to store each macro's definition along with its parameters
+class MDTEntry {
+ String macroCode;
+
+ public MDTEntry(String macroCode) {
+     this.macroCode = macroCode;
+ }
+}
+
+public class MacroPassI {
+ // Data structures to store MNT and MDT
+ private List<MNTEntry> mnt = new ArrayList<>();
+ private List<MDTEntry> mdt = new ArrayList<>();
+
+ // Data structure to store the source code
+ private List<String> sourceCode = new ArrayList<>();
+
+ // Method to simulate loading the source code (for demo purposes)
+ public void loadSourceCode() {
+     sourceCode.add("MACRO ADD X, Y");
+     sourceCode.add("    LOAD X");
+     sourceCode.add("    ADD Y");
+     sourceCode.add("    STORE RESULT");
+     sourceCode.add("ENDM");
+     
+     sourceCode.add("MACRO SUB A, B");
+     sourceCode.add("    LOAD A");
+     sourceCode.add("    SUB B");
+     sourceCode.add("    STORE RESULT");
+     sourceCode.add("ENDM");
+
+     sourceCode.add("ADD 5, 10");
+     sourceCode.add("SUB 3, 2");
+ }
+
+ // Method to process the source code (Pass-I)
+ public void processPass1() {
+     int mdtIndex = 0;  // Index for MDT
+
+     // Read the source code line by line
+     for (String line : sourceCode) {
+         line = line.trim();
+
+         if (line.startsWith("MACRO")) {
+             // Handle MACRO definition
+             String macroDefLine = line.substring(6).trim();  // Extract macro name and parameters
+             String[] parts = macroDefLine.split(",");
+             String macroName = parts[0].trim();
+
+             // Add the macro to MNT (Macro Name Table)
+             mnt.add(new MNTEntry(macroName, mdtIndex));
+
+             // Add the macro definition to MDT (Macro Definition Table)
+             mdt.add(new MDTEntry(line));
+
+             mdtIndex++;  // Increment the MDT index for next macro definition
+         } else if (line.equals("ENDM")) {
+             // Handle ENDM (end of macro definition)
+             continue;
+         } else {
+             // Handle regular code (non-macro)
+             // For now, we just print the non-macro code
+             System.out.println("Non-macro code: " + line);
+         }
+     }
+
+     // Print MNT and MDT for verification
+     printMNT();
+     printMDT();
+ }
+
+ // Method to print the Macro Name Table (MNT)
+ private void printMNT() {
+     System.out.println("Macro Name Table (MNT):");
+     for (MNTEntry entry : mnt) {
+         System.out.println("Macro Name: " + entry.macroName + ", MDT Index: " + entry.mdtIndex);
+     }
+ }
+
+ // Method to print the Macro Definition Table (MDT)
+ private void printMDT() {
+     System.out.println("Macro Definition Table (MDT):");
+     for (MDTEntry entry : mdt) {
+         System.out.println("Macro Code: " + entry.macroCode);
+     }
+ }
+
+ public static void main(String[] args) {
+	 MacroPassI pass1Processor = new MacroPassI();
+
+     // Load the source code (for simulation)
+     pass1Processor.loadSourceCode();
+
+     // Process the source code (Pass-I)
+     pass1Processor.processPass1();
+ }
+}
+
+
+
+//Non-macro code: Contains regular code (instructions or macro calls) found in the input source code.
+//MNT: Stores the names of macros and their corresponding index in MDT.
+//MDT: Stores the macro definitions themselves, i.e., the sequences of instructions that constitute each macro.
+//This output shows how the MNT and MDT are populated with data for use in Pass-II, where macro calls will be expanded by replacing them with the corresponding entries from MDT based on the MNT.
+//
+//
+//Data Structures for Pass-I
+//Macro Name Table (MNT): A table that holds the names of all defined macros.
+//Macro Definition Table (MDT): A table that holds the actual definitions of the macros, including the sequence of instructions and parameters.
+//Argument List: A temporary storage that holds the parameters passed in the macro call for later use in Pass-II.
+//Source Code: The source code that will be processed to find macro definitions and calls.
+//Plan for Pass-I
+//Input Reading: Read through the source code line by line.
+//Macro Definition Handling: When encountering a MACRO definition, add the macro name and its definition to the MNT and MDT respectively.
+//Macro Call Handling: When a macro call is encountered, store the macro name and the list of arguments.
+//Handling END Macro: The ENDM keyword signals the end of a macro definition.
+//Output: Generate intermediate code that records the locations of macro definitions and macro calls.
